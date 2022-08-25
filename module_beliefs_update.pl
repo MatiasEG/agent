@@ -48,7 +48,8 @@ update_beliefs(Perc):-
 	retractall(at(_, agente, me)),
 	forall(member(Rel, Perc), add_belief(Rel, Perc)).
 
-% Agrega una creencia a la base de creencias si no existe y si es un nodo controla que las entidades que se creen ubicadas en ese nodo sigan estando en la nueva percepcion
+% Agrega una creencia a la base de creencias si no existe
+% si es un nodo controla que las entidades que se cree que estan ubicadas en ese nodo sigan estando en la nueva percepcion
 add_belief(Rel, Perc):- Rel = node(Id, _, _, _, _), !, add(Rel),
 		forall(at(Id, TipoEntidad, IdEntidad), check_entity(at(Id, TipoEntidad, IdEntidad), Perc)).
 add_belief(Rel, _Perc):- add(Rel).
