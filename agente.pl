@@ -47,9 +47,12 @@
 %
 % Si Action tiene algún error el agente pierde el ciclo de ejecución
 
-run(Perc, Action, Text):-
+run(Perc, Action, Text):-print_beliefs,
     update_beliefs(Perc), % implementado en module_beliefs_update
     decide_action(Action, Text).
+
+print_beliefs:- writeln('---------------------------------------------------------------------------'),
+				forall(at(IdNode, TipoEntidad, IdEntidad), (node(IdNode, X, Y, _, _), writeln(at(IdNode, TipoEntidad, IdEntidad, X, Y)))).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TO-DO

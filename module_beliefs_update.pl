@@ -31,13 +31,32 @@
 % Pueden realizar todos los cambios de implementación que consideren necesarios.
 % Esta implementación busca ser un marco para facilitar la resolución del proyecto.
 
-update_beliefs(Perc):-
+%update_beliefs(Perc):-
 
 	% El agente olvida todo lo que recordaba
-	retractall(time(_)),
-	retractall(direction(_)),
-	retractall(at(_, _, _)),
-	retractall(node(_, _, _, _, _)),
+%	retractall(time(_)),
+%	retractall(direction(_)),
+%	retractall(at(_, _, _)),
+%	retractall(node(_, _, _, _, _)),
 
 	% y recuerda lo que percibió
-	forall(member(Rel, Perc), assert(Rel)).
+%	forall(member(Rel, Perc), assert(Rel)).
+
+update_beliefs(Perc):-
+	retractall(time(_)),
+	retractall(direction(_)),
+	retractall(at(_, agente, me)),
+	forall(member(Rel, Perc), add_belief(Rel, Perc)).
+
+% Agrega una creencia a la base de creencias si no existe y si es un nodo controla que las entidades que se creen ubicadas en ese nodo sigan estando en la nueva percepcion
+add_belief(Rel, Perc):- Rel = node(Id, _, _, _, _), !, add(Rel),
+		forall(at(Id, TipoEntidad, IdEntidad), check_entity(at(Id, TipoEntidad, IdEntidad), Perc)).
+add_belief(Rel, _Perc):- add(Rel).
+
+% controla que las entidades ubicadas en el nodo sigan estando en la nueva percepcion
+check_entity(At, Perc):- member(At, Perc), !.
+check_entity(at(IdNodo, TipoEntidad, IdEntidad), _Perc):- retract(at(IdNodo, TipoEntidad, IdEntidad)).
+
+% agrega X si no existe actualmente
+add(X):- X, !.
+add(X):- assert(X).
