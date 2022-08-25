@@ -1,0 +1,7 @@
+Algunos avisos importantes:
+
+1. La implementación que se provee intenta ser una base sobre la que puedan resolver más facilmente el proyecto.
+Sin embargo, todo cambio en la implementación que consideren adecuado, está permitido.
+
+2. La única excepción al mensaje anterior es el predicado run/3. 
+En ese caso, pueden modificar el cuerpo del predicado, pero no sus parámetros.
