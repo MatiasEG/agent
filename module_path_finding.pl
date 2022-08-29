@@ -39,7 +39,6 @@ seleccionar(Nodo, [Nodo|RestoLista], RestoLista).
 encontrarCamino(Nodo, []):- raiz(Nodo), !.
 encontrarCamino(Nodo, [P|Camino]):-
 	padre(Nodo, P),
-	writeln(camino(Nodo, P)),
 	encontrarCamino(P, Camino).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,13 +85,12 @@ buscar_plan_desplazamiento(_, [], [], 0).
 
 buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 	buscar(Frontera, [], Metas, Destino),
-	forall(padre(H, P), writeln(padre(H, P))),
+	findall([X, Y], (padre(X, Y), padre(Y, X)), Bug), write('----------------BUG-------------'), writeln(Bug),
 	encontrarCamino(Destino, C),
 	append([Destino], C, C2),
 	reverse(C2, C3),
 	costoCamino(C3, Costo),
 	eliminarPrimero(C3, Camino),
-	writeln(camino(Camino, Destino)),
 	retractall(esMeta(_)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,20 +158,22 @@ agregarFrontera([Vecino|Vecinos], Frontera, Nodo, NuevaFrontera):-
 agregarVecinoMenorCosto(Vecino, [], Padre, [Vecino]):-
 	Vecino = [Id, _CostoV],
 	Padre = [IdPadre, _CostoPadre],
-	assert(padre(Id, IdPadre)).
+	agregarPadre(Id, IdPadre).
 agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Vecino|Frontera]):-
 	Vecino = [Id, CostoV],
 	Nodo = [Id, CostoN],
 	Padre = [IdPadre, _CostoPadre],
 	CostoV =< CostoN,
-	\+padre(IdPadre, Id),
 	retractall(padre(Id,_)),
-	assert(padre(Id, IdPadre)).
+	agregarPadre(Id, IdPadre).
 agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], _Padre, [Nodo|Frontera]):-
 	Vecino = [Id, CostoV],
 	Nodo = [Id, CostoN],
 	CostoV > CostoN.
 agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Nodo|NuevaFrontera]):- agregarVecinoMenorCosto(Vecino, Frontera, Padre, NuevaFrontera).
+
+agregarPadre(Hijo, Padre):- \+ padre(Padre, Hijo), !, assert(padre(Hijo, Padre)).
+agregarPadre(Hijo, Padre).
 
 bubbleSort( List, Metas, SortedList):-
     swap( List, Metas, List1 ), ! ,

@@ -49,7 +49,8 @@
 
 run(Perc, Action, Text):-print_beliefs,
     update_beliefs(Perc), % implementado en module_beliefs_update
-    decide_action(Action, Text).
+    decide_action(Action, Text),
+    write('-------------'), write(Text), writeln('-------------').
 
 print_beliefs:- writeln('---------------------------------------------------------------------------'),
 				forall(at(IdNode, TipoEntidad, IdEntidad), (node(IdNode, X, Y, _, _), writeln(at(IdNode, TipoEntidad, IdEntidad, X, Y)))).
@@ -131,8 +132,8 @@ decide_action(Action, 'Avanzar...'):-
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
     busqueda_plan(Plan, _Destino, _Costo),
-    writeln('PLAN-------------------------------------------------------------------------------------'),
-    writeln(plannn(Plan)),
+    %writeln('PLAN-------------------------------------------------------------------------------------'),
+    %writeln(plannn(Plan)),
 	Plan \= [],!,
 	obtenerMovimiento(Plan, Action, Resto),
 	assert(plandesplazamiento(Resto)).
