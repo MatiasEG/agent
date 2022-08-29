@@ -67,8 +67,8 @@ buscar_plan_desplazamiento(Metas, Plan, Destino, Costo):-
 	forall(member(Meta, Metas), assert(esMeta(Meta))),
 	at(MyNode, agente, me),
 	length(Metas, CantMetas),
-	CantMetas > 0,
-	!,
+	%CantMetas > 0,
+	%!,
 	retractall(raiz(_)),
 	assert(raiz(MyNode)),
 	buscarEstrella([[MyNode, 0]], Metas, Camino, Costo, Destino),
@@ -108,6 +108,8 @@ buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 % Agregar vecinos a frontera, con los cuidados necesarios de A*
 % y llama recursivmaente con la nueva frontera.
 
+
+
 buscar(Frontera, _, _M, Nodo):-
 	seleccionar([Nodo, _], Frontera, _),
 	esMeta(Nodo),
@@ -115,9 +117,11 @@ buscar(Frontera, _, _M, Nodo):-
 
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
+	writeln('PRUEBA 5 ------------'),
+	writeln(Nodo),
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
 
-	writeln('hola/////////////////////////////////////////////////////////////////////////'),
+	%writeln('hola/////////////////////////////////////////////////////////////////////////'),
 	writeln(Nodo),
 	print_conexiones(Vecinos),
 
@@ -127,7 +131,9 @@ buscar(Frontera, Visitados, Metas, MM):-
 
 print_conexiones(Vecinos):- forall(member(node(Id,_,_,_,_),Vecinos),writeln(Id)).
 
-generarVecinos(node(_,_,_,_,Conexiones), NuevosVecinos):-
+generarVecinos([Id, Costo], NuevosVecinos):-
+	node(Id,_,_,_,Conexiones),
+	writeln(Conexiones),
 	findall(node(Id,PosX,PosY,Costo,ConexionesNuevas), (member(Id,Conexiones),node(Id,PosX,PosY,Costo,ConexionesNuevas)), NuevosVecinos).
 
 agregar(FronteraSinNodo,NuevosVecinos,NuevaFrontera,NuevosVisitados,Nodo,Metas):-
