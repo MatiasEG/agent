@@ -47,12 +47,12 @@
 %
 % Si Action tiene algún error el agente pierde el ciclo de ejecución
 
-run(Perc, Action, Text):-print_beliefs,
+run(Perc, Action, Text):-
     update_beliefs(Perc), % implementado en module_beliefs_update
-    decide_action(Action, Text),
-    write('-------------'), write(Text), writeln('-------------').
+    print_beliefs,
+    decide_action(Action, Text).
 
-print_beliefs:- writeln('---------------------------------------------------------------------------'),
+print_beliefs:- writeln('\n\n---------------------------------------------------------------------------'),
 				forall(at(IdNode, TipoEntidad, IdEntidad), (node(IdNode, X, Y, _, _), writeln(at(IdNode, TipoEntidad, IdEntidad, X, Y)))).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,7 +83,8 @@ decide_action(Action, 'Quiero levantar una copa...'):-
     node(MyNode, PosX, PosY, _, _),
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)).
+	retractall(plandesplazamiento(_)),
+	writeln(accion('LEVANTAR COPA')).
 
 decide_action(Action, 'Quiero levantar un cofre...'):-
     at(MyNode, agente, me),
@@ -91,7 +92,8 @@ decide_action(Action, 'Quiero levantar un cofre...'):-
     node(MyNode, PosX, PosY, _, _),
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)).
+	retractall(plandesplazamiento(_)),
+	writeln(accion('LEVANTAR COFRE')).
 
 decide_action(Action, 'Quiero levantar un reloj...'):-
     at(MyNode, agente, me),
@@ -99,7 +101,8 @@ decide_action(Action, 'Quiero levantar un reloj...'):-
     node(MyNode, PosX, PosY, _, _),
     Action = levantar_reloj(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)).
+	retractall(plandesplazamiento(_)),
+	writeln(accion('LEVANTAR RELOJ')).
 
 decide_action(Action, 'Quiero levantar una pocion...'):-
     at(MyNode, agente, me),
@@ -107,7 +110,8 @@ decide_action(Action, 'Quiero levantar una pocion...'):-
     node(MyNode, PosX, PosY, _, _),
     Action = levantar_pocion(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)).
+	retractall(plandesplazamiento(_)),
+	writeln(accion('LEVANTAR POCION')).
 
 % Me muevo a una posición vecina seleccionada de manera aleatoria.
 %decide_action(Action, 'Me muevo a la posicion de al lado...'):-
@@ -127,7 +131,8 @@ decide_action(Action, 'Avanzar...'):-
 	obtenerMovimiento(Plan, Destino, Resto),
 	retractall(plandesplazamiento(_)),
 	assert(plandesplazamiento(Resto)),
-	Action = Destino.
+	Action = Destino,
+	writeln(accion('AVANZAR', Destino)).
 
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
@@ -136,7 +141,8 @@ decide_action(Action, 'Avanzar con nuevo plan...'):-
     %writeln(plannn(Plan)),
 	Plan \= [],!,
 	obtenerMovimiento(Plan, Action, Resto),
-	assert(plandesplazamiento(Resto)).
+	assert(plandesplazamiento(Resto)),
+	writeln(accion('AVANZAR CON PLAN', Action, Plan)).
 
 % Giro en sentido horario, para conocer mas terreno.
 decide_action(Action, 'Girar para conocer el territorio...'):-
@@ -150,7 +156,8 @@ decide_action(Action, 'Girar para conocer el territorio...'):-
 				; Action = girar(w)
 				)
 			)
-	).
+	),
+	writeln(accion('GIRAR')).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
