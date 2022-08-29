@@ -107,6 +107,8 @@ decide_action(Action, 'Avanzar...'):-
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
     busqueda_plan(Plan, _Destino, _Costo),
+    writeln('PLAN-------------------------------------------------------------------------------------'),
+    writeln(plannn(PLAN)),
 	Plan \= [],
 	obtenerMovimiento(Plan, Action, Resto),
 	assert(plandesplazamiento(Resto)).

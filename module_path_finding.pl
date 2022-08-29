@@ -67,8 +67,8 @@ buscar_plan_desplazamiento(Metas, Plan, Destino, Costo):-
 	forall(member(Meta, Metas), assert(esMeta(Meta))),
 	at(MyNode, agente, me),
 	length(Metas, CantMetas),
-	%CantMetas > 0,
-	%!,
+	CantMetas > 0,
+	!,
 	retractall(raiz(_)),
 	assert(raiz(MyNode)),
 	buscarEstrella([[MyNode, 0]], Metas, Camino, Costo, Destino),
@@ -90,7 +90,7 @@ buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 	reverse(C2, C3),
 	costoCamino(C3, Costo),
 	eliminarPrimero(C3, Camino),
-	writeln(camino(Camino, Destino)).
+	writeln(camino(Camino, Destino)),
 	retractall(esMeta(_)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,19 +109,23 @@ buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 % Agregar vecinos a frontera, con los cuidados necesarios de A*
 % y llama recursivmaente con la nueva frontera.
 
-
-
-buscar(Frontera, _, _M, Nodo):-
+buscar(Frontera, _, M, Nodo):-
 	seleccionar([Nodo, _], Frontera, _),
 	esMeta(Nodo),
+	writeln(meta(Nodo)),
+	writeln(metas(M)),
 	!.
 
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
-	writeln(seleccinoado(Nodo, FronteraSinNodo)),
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
 	agregarAVisitados(Nodo, Visitados, NuevosVisitados), % agrega el nodo a lista de visitados
 	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, NuevosVisitados, Nodo, Metas), % agrega vecinos a la frontera - TO-DO
+	writeln(frontera(Frontera)),
+	writeln(nodo(Nodo)),
+	writeln(fronterasinnodo(FronteraSinNodo)),
+	writeln(nuevafrontera(NuevaFrontera)),
+	writeln(''),!,
 	buscar(NuevaFrontera, NuevosVisitados, Metas, MM). % continua la busqueda con la nueva frontera
 
 generarVecinos([Id, Costo], NuevosVecinos):-
@@ -130,7 +134,10 @@ generarVecinos([Id, Costo], NuevosVecinos):-
 
 agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,_Nodo,Metas):-
 	filtrarVisistados(Vecinos, Visitados, VecinosNoVisitados),
-	append(VecinosNoVisitados, Frontera, NuevaFrontera),
+	writeln(vecinos(Vecinos)),
+	writeln(visitados(Visitados)),
+	writeln(novisitados(VecinosNoVisitados)),
+	agregarFrontera(VecinosNoVisitados, Frontera, NuevaFrontera),
 	bubbleSort(NuevaFrontera, Metas, NuevaFronterOrdenada).
 
 filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):-
@@ -143,6 +150,13 @@ pertenece(_, []):- false.
 pertenece(Vecino, [Visitado|_Visitados]):- Vecino = [Id, _], Visitado = [Id, _].
 pertenece(Vecino, [_Visitado|Visitados]):- pertenece(Vecino, Visitados).
 
+agregarFrontera([], Frontera, Frontera).
+agregarFrontera([Vecino|Vecinos], Frontera, NuevaFrontera):-
+	agregarVecinoMenorCosto(Vecino, Frontera, FronteraIntermedia), agregarFrontera(Vecinos, FronteraIntermedia, NuevaFrontera).
+
+agregarVecinoMenorCosto(Vecino, [], [Vecino]).
+agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], [[Id, MinCosto]|Frontera]):- Vecino = [Id, CostoV], Nodo = [Id, CostoN], MinCosto is min(CostoV, CostoN).
+agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], [Nodo|NuevaFrontera]):- agregarVecinoMenorCosto(Vecino, Frontera, NuevaFrontera).
 
 bubbleSort( List, Metas, SortedList):-
     swap( List, Metas, List1 ), ! ,
