@@ -137,20 +137,21 @@ generarVecinos([Id, Costo], NuevosVecinos):-
 	findall(node(Id,PosX,PosY,Costo,ConexionesNuevas), (member(Id,Conexiones),node(Id,PosX,PosY,Costo,ConexionesNuevas)), NuevosVecinos).
 
 agregar(FronteraSinNodo,NuevosVecinos,NuevaFrontera,NuevosVisitados,Nodo,Metas):-
-	bubbleSort(NuevosVecinos,NuevosVecinosOrdenados),
-	append(NuevosVecinosOrdenados, FronteraSinNodo, NuevaFrontera).
+	append(NuevosVecinos, FronteraSinNodo, NuevaFrontera),
+	bubbleSort(NuevaFrontera,NuevosVecinosOrdenados).
 
 
-%bubbleSort( List, SortedList):-
-%    swap( List, List1 ), ! ,
-%    bubbleSort( List1, SortedList).
-%bubbleSort(List, List).
+bubbleSort( List, SortedList):-
+    swap( List, List1 ), ! ,
+    bubbleSort( List1, SortedList).
+bubbleSort(List, List).
 
-%swap( [ X, Y | Rest ], [ Y, X | Rest ] ) :-
-%    calcularH()
-%    Cx > Cy, ! .
-%swap( [ Z | Rest ], [ Z | Rest1 ] ) :-
-%    swap(Rest, Rest1 ).
+swap( [ NodoX, NodoY | Rest ], [ NodoY, NodoX | Rest ] ) :-
+    calcularF(NodoX,Meta,ResultadoX),
+    calcularF(NodoY,Meta,ResultadoY),
+    ResultadoX > ResultadoY, ! .
+swap( [ Nodo | Rest ], [ Nodo | Rest1 ] ) :-
+    swap(Rest, Rest1 ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -186,6 +187,13 @@ calcularH(Nodo, Meta, Resultado):-
 	node(Meta, X2, Y2, _, _),
 	node(Nodo, X1, Y1, _, _),
 	distance([X1, Y1], [X2, Y2], Resultado).
+
+calcularF(Nodo, Meta, Resultado):-
+	Nodo = [Id, Costo],
+	calcularH(Id,Meta,ResultadoH),
+	Resultado is ResultadoH + Costo.
+
+
 
 distance([X1, Y1], [X2, Y2], Distance):-
 	DX is X2 - X1,
