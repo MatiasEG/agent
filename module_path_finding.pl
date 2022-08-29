@@ -90,6 +90,7 @@ buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 	reverse(C2, C3),
 	costoCamino(C3, Costo),
 	eliminarPrimero(C3, Camino),
+	writeln(camino(Camino, Destino)).
 	retractall(esMeta(_)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -117,41 +118,43 @@ buscar(Frontera, _, _M, Nodo):-
 
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
-	writeln('PRUEBA 5 ------------'),
-	writeln(Nodo),
+	writeln(seleccinoado(Nodo, FronteraSinNodo)),
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
-
-	%writeln('hola/////////////////////////////////////////////////////////////////////////'),
-	writeln(Nodo),
-	print_conexiones(Vecinos),
-
 	agregarAVisitados(Nodo, Visitados, NuevosVisitados), % agrega el nodo a lista de visitados
 	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, NuevosVisitados, Nodo, Metas), % agrega vecinos a la frontera - TO-DO
 	buscar(NuevaFrontera, NuevosVisitados, Metas, MM). % continua la busqueda con la nueva frontera
 
-print_conexiones(Vecinos):- forall(member(node(Id,_,_,_,_),Vecinos),writeln(Id)).
-
 generarVecinos([Id, Costo], NuevosVecinos):-
 	node(Id,_,_,_,Conexiones),
-	writeln(Conexiones),
-	findall(node(Id,PosX,PosY,Costo,ConexionesNuevas), (member(Id,Conexiones),node(Id,PosX,PosY,Costo,ConexionesNuevas)), NuevosVecinos).
+	findall([IdV, CostoTotal], (member([IdV, CostoV],Conexiones),node(IdV,_,_,CostoV,_), CostoTotal is Costo + CostoV), NuevosVecinos).
 
-agregar(FronteraSinNodo,NuevosVecinos,NuevaFrontera,NuevosVisitados,Nodo,Metas):-
-	append(NuevosVecinos, FronteraSinNodo, NuevaFrontera),
-	bubbleSort(NuevaFrontera,NuevosVecinosOrdenados).
+agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,_Nodo,Metas):-
+	filtrarVisistados(Vecinos, Visitados, VecinosNoVisitados),
+	append(VecinosNoVisitados, Frontera, NuevaFrontera),
+	bubbleSort(NuevaFrontera, Metas, NuevaFronterOrdenada).
+
+filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):-
+    pertenece(Vecino, Visitados), !, filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).
+filtrarVisistados([Vecino|Vecinos], Visitados, [Vecino|VecinosFiltrados]):-
+    filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).
+filtrarVisistados([], _Visitados, []).
+
+pertenece(_, []):- false.
+pertenece(Vecino, [Visitado|_Visitados]):- Vecino = [Id, _], Visitado = [Id, _].
+pertenece(Vecino, [_Visitado|Visitados]):- pertenece(Vecino, Visitados).
 
 
-bubbleSort( List, SortedList):-
-    swap( List, List1 ), ! ,
-    bubbleSort( List1, SortedList).
-bubbleSort(List, List).
+bubbleSort( List, Metas, SortedList):-
+    swap( List, Metas, List1 ), ! ,
+    bubbleSort( List1, Metas, SortedList).
+bubbleSort(List, _Metas, List).
 
-swap( [ NodoX, NodoY | Rest ], [ NodoY, NodoX | Rest ] ) :-
-    calcularF(NodoX,Meta,ResultadoX),
-    calcularF(NodoY,Meta,ResultadoY),
+swap( [ NodoX, NodoY | Rest ], Metas, [ NodoY, NodoX | Rest ] ) :-
+    calcularF(NodoX,Metas,ResultadoX),
+    calcularF(NodoY,Metas,ResultadoY),
     ResultadoX > ResultadoY, ! .
-swap( [ Nodo | Rest ], [ Nodo | Rest1 ] ) :-
-    swap(Rest, Rest1 ).
+swap( [ Nodo | Rest ], Metas, [ Nodo | Rest1 ] ) :-
+    swap(Rest, Metas, Rest1 ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -188,12 +191,14 @@ calcularH(Nodo, Meta, Resultado):-
 	node(Nodo, X1, Y1, _, _),
 	distance([X1, Y1], [X2, Y2], Resultado).
 
-calcularF(Nodo, Meta, Resultado):-
+calcularF(Nodo, Metas, Resultado):-
 	Nodo = [Id, Costo],
-	calcularH(Id,Meta,ResultadoH),
+	findall(Distancia, (member(Meta, Metas), calcularH(Id,Meta,Distancia)), Distancias),
+	minDistancia(Distancias, ResultadoH),
 	Resultado is ResultadoH + Costo.
 
-
+minDistancia([X], X):- !.
+minDistancia([X|Xs], Min):- minDistancia(Xs, MinXs), Min is min(X, MinXs).
 
 distance([X1, Y1], [X2, Y2], Distance):-
 	DX is X2 - X1,
