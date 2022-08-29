@@ -164,6 +164,7 @@ agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Vecino|Frontera]):-
 	Nodo = [Id, CostoN],
 	Padre = [IdPadre, _CostoPadre],
 	CostoV =< CostoN,
+	\+padre(IdPadre, Id),
 	retractall(padre(Id,_)),
 	assert(padre(Id, IdPadre)).
 agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], _Padre, [Nodo|Frontera]):-
