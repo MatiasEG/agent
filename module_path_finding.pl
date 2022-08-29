@@ -22,9 +22,9 @@ eliminarPrimero([_|Xs], Xs).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % seleccionar(+Nodo, +Frontera, +FronteraSinNodo)
-%	
+%
 % Selecciona el primer nodo de la lista Frontera.
-%	
+%
 seleccionar(Nodo, [Nodo|RestoLista], RestoLista).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,7 +33,7 @@ seleccionar(Nodo, [Nodo|RestoLista], RestoLista).
 %
 % Encuentra un camino a un nodo Meta.
 % Usa las relaciones padre(Hijo, Padre) que se van agregando a la base de conocimiento
-% cuando se agregan nuevos vecinos a la nueva frontera, 
+% cuando se agregan nuevos vecinos a la nueva frontera,
 % en la busqueda de llegar de un nodo origen a uno destino.
 %
 encontrarCamino(Nodo, []):- raiz(Nodo), !.
@@ -41,7 +41,7 @@ encontrarCamino(Nodo, [P|Camino]):-
 	padre(Nodo, P),
 	encontrarCamino(P, Camino).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % crearPlan(+Camino, -Plan)
 %
@@ -73,20 +73,20 @@ buscar_plan_desplazamiento(Metas, Plan, Destino, Costo):-
 	assert(raiz(MyNode)),
 	buscarEstrella([[MyNode, 0]], Metas, Camino, Costo, Destino),
 	crearPlan(Camino, Plan).
-	
+
 buscar_plan_desplazamiento(_, [], [], 0).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % buscarEstrella(+Frontera, +Metas, ?Camino, ?Costo, ?Destino)
-% 
+%
 % Busca el camino optimo desde la frontera hacia la meta mas cercana, utilizando la estrategia de busqueda A*.
 %
-	
+
 buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 	buscar(Frontera, [], Metas, Destino),
 	encontrarCamino(Destino, C),
-	append([Destino], C, C2),	
+	append([Destino], C, C2),
 	reverse(C2, C3),
 	costoCamino(C3, Costo),
 	eliminarPrimero(C3, Camino),
@@ -95,19 +95,19 @@ buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % buscar(+Frontera, +Visitados, +Metas, -Destino)
-% 
+%
 % Busca el camino optimo desde la frontera hacia la Meta, utilizando la estrategia de busqueda A*.
 % No devuelve el camino como un parametro, sino que agrega las relaciones padre(Hijo, Padre)
 % que permita luego encontrar el camino y su costo.
 %
 % Caso 1: Si el nodo es meta, termina la búsqueda.
 % Caso 2: Si el nodo no es meta
-% Selecciono el primer nodo de la frontera, 
+% Selecciono el primer nodo de la frontera,
 % Genera los vecinos,
 % Agregar nodo a visitados,
 % Agregar vecinos a frontera, con los cuidados necesarios de A*
 % y llama recursivmaente con la nueva frontera.
-	
+
 buscar(Frontera, _, _M, Nodo):-
 	seleccionar([Nodo, _], Frontera, _),
 	esMeta(Nodo),
@@ -116,11 +116,37 @@ buscar(Frontera, _, _M, Nodo):-
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
+
+	writeln('hola/////////////////////////////////////////////////////////////////////////'),
+	writeln(Nodo),
+	print_conexiones(Vecinos),
+
 	agregarAVisitados(Nodo, Visitados, NuevosVisitados), % agrega el nodo a lista de visitados
 	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, NuevosVisitados, Nodo, Metas), % agrega vecinos a la frontera - TO-DO
 	buscar(NuevaFrontera, NuevosVisitados, Metas, MM). % continua la busqueda con la nueva frontera
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+print_conexiones(Vecinos):- forall(member(node(Id,_,_,_,_),Vecinos),writeln(Id)).
+
+generarVecinos(node(_,_,_,_,Conexiones), NuevosVecinos):-
+	findall(node(Id,PosX,PosY,Costo,ConexionesNuevas), (member(Id,Conexiones),node(Id,PosX,PosY,Costo,ConexionesNuevas)), NuevosVecinos).
+
+agregar(FronteraSinNodo,NuevosVecinos,NuevaFrontera,NuevosVisitados,Nodo,Metas):-
+	bubbleSort(NuevosVecinos,NuevosVecinosOrdenados),
+	append(NuevosVecinosOrdenados, FronteraSinNodo, NuevaFrontera).
+
+
+%bubbleSort( List, SortedList):-
+%    swap( List, List1 ), ! ,
+%    bubbleSort( List1, SortedList).
+%bubbleSort(List, List).
+
+%swap( [ X, Y | Rest ], [ Y, X | Rest ] ) :-
+%    calcularH()
+%    Cx > Cy, ! .
+%swap( [ Z | Rest ], [ Z | Rest1 ] ) :-
+%    swap(Rest, Rest1 ).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % agregarAVisitados(+Nodo, +Visitados, ?VisitadosConNodo)
 %
@@ -132,7 +158,7 @@ agregarAVisitados(Nodo, Visitados, [Nodo | Visitados]).
 %
 % costoCamino(+Lista, ?Costo)
 %
-% Calcula el costo del camino, 
+% Calcula el costo del camino,
 % como la sumatoria de los costos de los nodos que forma el camino.
 % Lista es una lista conteniendo identificadores de nodos, representando el camino.
 %
