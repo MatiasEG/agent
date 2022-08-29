@@ -39,6 +39,7 @@ seleccionar(Nodo, [Nodo|RestoLista], RestoLista).
 encontrarCamino(Nodo, []):- raiz(Nodo), !.
 encontrarCamino(Nodo, [P|Camino]):-
 	padre(Nodo, P),
+	writeln(camino(Nodo, P)),
 	encontrarCamino(P, Camino).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,6 +86,7 @@ buscar_plan_desplazamiento(_, [], [], 0).
 
 buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 	buscar(Frontera, [], Metas, Destino),
+	forall(padre(H, P), writeln(padre(H, P))),
 	encontrarCamino(Destino, C),
 	append([Destino], C, C2),
 	reverse(C2, C3),
