@@ -84,6 +84,30 @@ decide_action(Action, 'Quiero levantar una copa...'):-
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)).
 
+decide_action(Action, 'Quiero levantar un cofre...'):-
+    at(MyNode, agente, me),
+    at(MyNode, cofre, IdGold),
+    node(MyNode, PosX, PosY, _, _),
+    Action = levantar_tesoro(IdGold, PosX, PosY),
+    retractall(at(MyNode, _, IdGold)),
+	retractall(plandesplazamiento(_)).
+
+decide_action(Action, 'Quiero levantar un reloj...'):-
+    at(MyNode, agente, me),
+    at(MyNode, reloj, IdGold),
+    node(MyNode, PosX, PosY, _, _),
+    Action = levantar_reloj(IdGold, PosX, PosY),
+    retractall(at(MyNode, _, IdGold)),
+	retractall(plandesplazamiento(_)).
+
+decide_action(Action, 'Quiero levantar una pocion...'):-
+    at(MyNode, agente, me),
+    at(MyNode, pocion, IdGold),
+    node(MyNode, PosX, PosY, _, _),
+    Action = levantar_pocion(IdGold, PosX, PosY),
+    retractall(at(MyNode, _, IdGold)),
+	retractall(plandesplazamiento(_)).
+
 % Me muevo a una posición vecina seleccionada de manera aleatoria.
 %decide_action(Action, 'Me muevo a la posicion de al lado...'):-
 %	at(MyNode, agente, me),
@@ -108,8 +132,8 @@ decide_action(Action, 'Avanzar...'):-
 decide_action(Action, 'Avanzar con nuevo plan...'):-
     busqueda_plan(Plan, _Destino, _Costo),
     writeln('PLAN-------------------------------------------------------------------------------------'),
-    writeln(plannn(PLAN)),
-	Plan \= [],
+    writeln(plannn(Plan)),
+	Plan \= [],!,
 	obtenerMovimiento(Plan, Action, Resto),
 	assert(plandesplazamiento(Resto)).
 
@@ -145,6 +169,6 @@ obtenerMovimiento([X|Xs], X, Xs).
 busqueda_plan(Plan, Destino, Costo):-
 	retractall(plandesplazamiento(_)),
 	retractall(esMeta(_)),
-	findall(Nodo, at(Nodo, copa, _), Metas), % nuevas metas
+	findall(Nodo, (at(Nodo, Tipo, _), Tipo \== agente), Metas), % nuevas metas
 
 	buscar_plan_desplazamiento(Metas, Plan, Destino, Costo). % implementado en module_path_finding
