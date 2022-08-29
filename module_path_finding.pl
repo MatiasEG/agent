@@ -121,10 +121,10 @@ buscar(Frontera, Visitados, Metas, MM):-
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
 	agregarAVisitados(Nodo, Visitados, NuevosVisitados), % agrega el nodo a lista de visitados
 	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, NuevosVisitados, Nodo, Metas), % agrega vecinos a la frontera - TO-DO
-	writeln(frontera(Frontera)),
-	writeln(nodo(Nodo)),
-	writeln(fronterasinnodo(FronteraSinNodo)),
-	writeln(nuevafrontera(NuevaFrontera)),
+%	writeln(frontera(Frontera)),
+%	writeln(nodo(Nodo)),
+%	writeln(fronterasinnodo(FronteraSinNodo)),
+%	writeln(nuevafrontera(NuevaFrontera)),
 	writeln(''),!,
 	buscar(NuevaFrontera, NuevosVisitados, Metas, MM). % continua la busqueda con la nueva frontera
 
@@ -132,12 +132,12 @@ generarVecinos([Id, Costo], NuevosVecinos):-
 	node(Id,_,_,_,Conexiones),
 	findall([IdV, CostoTotal], (member([IdV, CostoV],Conexiones),node(IdV,_,_,CostoV,_), CostoTotal is Costo + CostoV), NuevosVecinos).
 
-agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,_Nodo,Metas):-
+agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,Nodo,Metas):-
 	filtrarVisistados(Vecinos, Visitados, VecinosNoVisitados),
-	writeln(vecinos(Vecinos)),
-	writeln(visitados(Visitados)),
-	writeln(novisitados(VecinosNoVisitados)),
-	agregarFrontera(VecinosNoVisitados, Frontera, NuevaFrontera),
+%	writeln(vecinos(Vecinos)),
+%	writeln(visitados(Visitados)),
+%	writeln(novisitados(VecinosNoVisitados)),
+	agregarFrontera(VecinosNoVisitados, Frontera, Nodo, NuevaFrontera),
 	bubbleSort(NuevaFrontera, Metas, NuevaFronterOrdenada).
 
 filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):-
@@ -150,13 +150,27 @@ pertenece(_, []):- false.
 pertenece(Vecino, [Visitado|_Visitados]):- Vecino = [Id, _], Visitado = [Id, _].
 pertenece(Vecino, [_Visitado|Visitados]):- pertenece(Vecino, Visitados).
 
-agregarFrontera([], Frontera, Frontera).
-agregarFrontera([Vecino|Vecinos], Frontera, NuevaFrontera):-
-	agregarVecinoMenorCosto(Vecino, Frontera, FronteraIntermedia), agregarFrontera(Vecinos, FronteraIntermedia, NuevaFrontera).
+agregarFrontera([], Frontera, _Nodo, Frontera).
+agregarFrontera([Vecino|Vecinos], Frontera, Nodo, NuevaFrontera):-
+	agregarVecinoMenorCosto(Vecino, Frontera, Nodo, FronteraIntermedia),
+	agregarFrontera(Vecinos, FronteraIntermedia, Nodo,NuevaFrontera).
 
-agregarVecinoMenorCosto(Vecino, [], [Vecino]).
-agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], [[Id, MinCosto]|Frontera]):- Vecino = [Id, CostoV], Nodo = [Id, CostoN], MinCosto is min(CostoV, CostoN).
-agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], [Nodo|NuevaFrontera]):- agregarVecinoMenorCosto(Vecino, Frontera, NuevaFrontera).
+agregarVecinoMenorCosto(Vecino, [], Padre, [Vecino]):-
+	Vecino = [Id, _CostoV],
+	Padre = [IdPadre, _CostoPadre],
+	assert(padre(Id, IdPadre)).
+agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Vecino|Frontera]):-
+	Vecino = [Id, CostoV],
+	Nodo = [Id, CostoN],
+	Padre = [IdPadre, _CostoPadre],
+	CostoV =< CostoN,
+	retractall(padre(Id,_)),
+	assert(padre(Id, IdPadre)).
+agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], _Padre, [Nodo|Frontera]):-
+	Vecino = [Id, CostoV],
+	Nodo = [Id, CostoN],
+	CostoV > CostoN.
+agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Nodo|NuevaFrontera]):- agregarVecinoMenorCosto(Vecino, Frontera, Padre, NuevaFrontera).
 
 bubbleSort( List, Metas, SortedList):-
     swap( List, Metas, List1 ), ! ,

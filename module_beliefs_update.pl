@@ -4,10 +4,11 @@
 	    time/1,
 	    node/5,
 	    at/3,
-		direction/1
+	    padre/2,
+	    direction/1
 	  ]).
 
-:- dynamic time/1, node/5, at/3, direction/1.
+:- dynamic time/1, node/5, at/3, direction/1, padre/2.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TO-DO
@@ -19,7 +20,7 @@
 % consultado por el resto del código del agente.
 %
 % El parámetro Perc recibe una lista con el siguiente formato: [N1,...,Nk,A1,...Ap,Time,Dir]
-% donde: 
+% donde:
 % N1 a Nk son k elementos (k>0) de la forma node(Id, PosX, PosY, Costo, Conexiones),
 % A1 a Ap son p elementos (p>0) de la forma at(IdNodo, TipoEntidad, IdEntidad),
 % Time es el functor time(T), donde T es el tiempo actual (descendente) de la partida.
@@ -45,6 +46,7 @@
 update_beliefs(Perc):-
 	retractall(time(_)),
 	retractall(direction(_)),
+	retractall(padre(_,_)),
 	retractall(at(_, agente, me)),
 	forall(member(Rel, Perc), add_belief(Rel, Perc)).
 
