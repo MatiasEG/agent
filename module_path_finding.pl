@@ -70,6 +70,7 @@ buscar_plan_desplazamiento(Metas, Plan, Destino, Costo):-
 	CantMetas > 0,
 	!,
 	retractall(raiz(_)),
+	retractall(padre(_,_)),
 	assert(raiz(MyNode)),
 	buscarEstrella([[MyNode, 0]], Metas, Camino, Costo, Destino),
 	crearPlan(Camino, Plan).
@@ -84,6 +85,8 @@ buscar_plan_desplazamiento(_, [], [], 0).
 %
 
 buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
+	findall(padre(P1, P2), padre(P1, P2), ListaPadres),
+	write(ListaPadres), nl,
 	buscar(Frontera, [], Metas, Destino),
 	findall([X, Y], (padre(X, Y), padre(Y, X)), Bug),writeln(buggggg(Bug)),
 	encontrarCamino(Destino, C),
@@ -140,13 +143,13 @@ agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,Nodo,Metas):-
 	agregarFrontera(VecinosNoVisitados, Frontera, Nodo, NuevaFrontera),
 	bubbleSort(NuevaFrontera, Metas, NuevaFronterOrdenada).
 
-filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):-
+filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):- %TODO agregar costos
     pertenece(Vecino, Visitados), !, filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).
 filtrarVisistados([Vecino|Vecinos], Visitados, [Vecino|VecinosFiltrados]):-
     filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).
 filtrarVisistados([], _Visitados, []).
 
-pertenece(_, []):- false.
+% pertenece(_, []):- false.
 pertenece(Vecino, [Visitado|_Visitados]):- Vecino = [Id, _], Visitado = [Id, _], !.
 pertenece(Vecino, [_Visitado|Visitados]):- pertenece(Vecino, Visitados).
 
@@ -170,9 +173,11 @@ agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], _Padre, [Nodo|Frontera]):-
 	Vecino = [Id, CostoV],
 	Nodo = [Id, CostoN],
 	CostoV > CostoN,!.
-agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Nodo|NuevaFrontera]):- agregarVecinoMenorCosto(Vecino, Frontera, Padre, NuevaFrontera).
+agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Nodo|NuevaFrontera]):- 
+	agregarVecinoMenorCosto(Vecino, Frontera, Padre, NuevaFrontera).
 
-agregarPadre(Hijo, Padre):- retractall(padre(Padre, Hijo)), assert(padre(Hijo, Padre)).
+%agregarPadre(Hijo, Padre):- retractall(padre(Padre, Hijo)), assert(padre(Hijo, Padre)).
+agregarPadre(Hijo, Padre):- assert(padre(Hijo, Padre)).
 
 bubbleSort( List, Metas, SortedList):-
     swap( List, Metas, List1 ), ! ,

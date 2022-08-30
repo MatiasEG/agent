@@ -46,7 +46,7 @@
 update_beliefs(Perc):-
 	retractall(time(_)),
 	retractall(direction(_)),
-	retractall(padre(_,_)),
+	%retractall(padre(_,_)),
 	retractall(at(_, agente, me)),
 	forall(member(Rel, Perc), add_belief(Rel, Perc)).
 
