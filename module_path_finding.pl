@@ -123,25 +123,81 @@ buscar(Frontera, _, M, Nodo):-
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
-	agregarAVisitados(Nodo, Visitados, NuevosVisitados), % agrega el nodo a lista de visitados
-	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, NuevosVisitados, Nodo, Metas), % agrega vecinos a la frontera - TO-DO
+	agregarAVisitados(Nodo, Visitados, VisitadosIntermedio), % agrega el nodo a lista de visitados
+	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, VisitadosIntermedio, Nodo, Metas,VisitadosNuevo), % agrega vecinos a la frontera - TO-DO
 %	writeln(frontera(Frontera)),
 %	writeln(nodo(Nodo)),
 %	writeln(fronterasinnodo(FronteraSinNodo)),
 %	writeln(nuevafrontera(NuevaFrontera)),!,
-	buscar(NuevaFrontera, NuevosVisitados, Metas, MM). % continua la busqueda con la nueva frontera
+	buscar(NuevaFrontera, VisitadosNuevo, Metas, MM). % continua la busqueda con la nueva frontera
 
 generarVecinos([Id, Costo], NuevosVecinos):-
 	node(Id,_,_,_,Conexiones),
 	findall([IdV, CostoTotal], (member([IdV, CostoV],Conexiones),node(IdV,_,_,CostoV,_), CostoTotal is Costo + CostoV), NuevosVecinos).
 
-agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,Nodo,Metas):-
-	filtrarVisistados(Vecinos, Visitados, VecinosNoVisitados),
-%	writeln(vecinos(Vecinos)),
-%	writeln(visitados(Visitados)),
-%	writeln(novisitados(VecinosNoVisitados)),
+agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,Nodo,Metas, VisitadosNuevo):-
+	filtrarVecinos(Vecinos, Visitados, VecinosNoVisitados, VisitadosNuevo),
 	agregarFrontera(VecinosNoVisitados, Frontera, Nodo, NuevaFrontera),
-	bubbleSort(NuevaFrontera, Metas, NuevaFronterOrdenada).
+	ordenarPorH(NuevaFrontera, Metas, NuevaFronterOrdenada).
+
+filtrarVecinos([Vecino|RestoVecinos], Visitados, VecinosNuevo, VisitadosNuevo):-
+    filtrarUnVecino(Vecino, Visitados, VecinoFiltrado, VisitadosIntermedio),
+    filtrarVecinos(RestoVecinos, VisitadosIntermedio, RestoVecinosFiltrados, VisitadosNuevo),
+    append(VecinoFiltrado, RestoVecinosFiltrados, VecinosNuevo).
+filtrarVecinos([], Visitados, [], Visitados).
+
+filtrarUnVecino(Vecino, [Visitado|RestoVisitados], VecinoFiltrado, VisitadosNuevo):-
+    Vecino = [Id, _],
+    Visitado = [Id, _], !,
+    compararYFiltrar(Vecino, Visitado, VecinoFiltrado, VisitadoFiltrado),
+    append(VisitadoFiltrado, RestoVisitados, VisitadosNuevo).
+filtrarUnVecino(Vecino, [Visitado|RestoVisitados], VecinoFiltrado, [Visitado|RestoVisitadosNuevo]):-
+    filtrarUnVecino(Vecino, RestoVisitados, VecinoFiltrado, RestoVisitadosNuevo).
+filtrarUnVecino(Vecino, [], [Vecino], []).
+
+compararYFiltrar(Vecino, Visitado, [Vecino], []):-
+    Vecino = [Id, CostoVecino],
+    Visitado = [Id, CostoVisitado],
+    CostoVecino < CostoVisitado, !, retractall(padre(Id,_)).
+compararYFiltrar(_, Visitado, [], [Visitado]).
+
+insertarVecinos([Vecino|RestoVecinos], Frontera, Padre, FronteraResultado):-
+    insertarUnVecino(Vecino, Frontera, Padre, FronteraIntermedia),
+    insertarVecinos(RestoVecinos, FronteraIntermedia, Padre, FronteraResultado).
+insertarVecinos([], Frontera, _Padre, Frontera).
+
+insertarUnVecino(Vecino, [], Padre, [Vecino]):-
+    Vecino = [Id, _CostoVecino],
+    Padre = [IdPadre, _CostoPadre],
+    assert(padre(Id, IdPadre)).
+insertarUnVecino(Vecino, [Nodo|RestoFrontera], Padre, [Vecino|RestoFrontera]):-
+    Vecino = [Id, CostoVecino],
+    Nodo = [Id, CostoNodo],
+    Padre = [IdPadre, _CostoPadre],
+    CostoVecino < CostoNodo, !, retractall(padre(Id,_)), assert(padre(Id, IdPadre)).
+insertarUnVecino(Vecino, [Nodo|RestoFrontera], _Padre, [Nodo|RestoFrontera]):-
+    Vecino = [Id, _CostoVecino],
+    Nodo = [Id, _CostoNodo].
+insertarUnVecino(Vecino, [Nodo|Frontera], Padre, [Nodo|FronteraNueva]):-
+    insertarUnVecino(Vecino, Frontera, Padre, FronteraNueva).
+
+ordenarPorH(Frontera, Metas, FronteraOrdenada):- quicksort(Frontera, Metas, FronteraOrdenada).
+    
+quicksort([X|Xs], Metas, Ys) :-
+  partition(Xs,X,Left,Right, Metas),
+  quicksort(Left,Metas, Ls),
+  quicksort(Right,Metas, Rs),
+  append(Ls,[X|Rs],Ys).
+quicksort([],_Metas, []).
+
+partition([X|Xs],Y,[X|Ls],Rs, Metas) :-
+    calcularF(X, Metas, FX),
+    calcularF(Y, Metas, FY),
+    FX =< FY, !,
+    partition(Xs,Y,Ls,Rs, Metas).
+partition([X|Xs],Y,Ls,[X|Rs], Metas) :-
+    partition(Xs,Y,Ls,Rs, Metas).
+partition([],_Y,[],[], _Metas).
 
 filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):- %TODO agregar costos
     pertenece(Vecino, Visitados), !, filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).

@@ -18,7 +18,7 @@
 	append3/4
 ]).
 
-:- dynamic plandesplazamiento/1.
+:- dynamic plandesplazamiento/1, noop/0.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run(+Perc, -Action, -Text)
@@ -77,6 +77,12 @@ print_beliefs:- writeln('\n\n---------------------------------------------------
 % Esta implementación busca ser un marco para facilitar la resolución del proyecto.
 
 % Si estoy en la misma posición que una copa, intento levantarla.
+decide_action(Action, 'Espero un ciclo...'):-
+	noop, !,
+	retractall(noop),
+	at(MyNode, agente, me),
+	Action = avanzar(MyNode).
+
 decide_action(Action, 'Quiero levantar una copa...'):-
     at(MyNode, agente, me),
     at(MyNode, copa, IdGold),
@@ -84,6 +90,7 @@ decide_action(Action, 'Quiero levantar una copa...'):-
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
+	assert(noop),
 	writeln(accion('LEVANTAR COPA')).
 
 decide_action(Action, 'Quiero levantar un cofre...'):-
@@ -93,6 +100,7 @@ decide_action(Action, 'Quiero levantar un cofre...'):-
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
+	assert(noop),
 	writeln(accion('LEVANTAR COFRE')).
 
 decide_action(Action, 'Quiero levantar un reloj...'):-
@@ -102,6 +110,7 @@ decide_action(Action, 'Quiero levantar un reloj...'):-
     Action = levantar_reloj(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
+	assert(noop),
 	writeln(accion('LEVANTAR RELOJ')).
 
 decide_action(Action, 'Quiero levantar una pocion...'):-
@@ -111,6 +120,7 @@ decide_action(Action, 'Quiero levantar una pocion...'):-
     Action = levantar_pocion(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
+	assert(noop),
 	writeln(accion('LEVANTAR POCION')).
 
 % Me muevo a una posición vecina seleccionada de manera aleatoria.
