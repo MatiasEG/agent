@@ -125,10 +125,6 @@ buscar(Frontera, Visitados, Metas, MM):-
 	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
 	agregarAVisitados(Nodo, Visitados, VisitadosIntermedio), % agrega el nodo a lista de visitados
 	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, VisitadosIntermedio, Nodo, Metas,VisitadosNuevo), % agrega vecinos a la frontera - TO-DO
-%	writeln(frontera(Frontera)),
-%	writeln(nodo(Nodo)),
-%	writeln(fronterasinnodo(FronteraSinNodo)),
-%	writeln(nuevafrontera(NuevaFrontera)),!,
 	buscar(NuevaFrontera, VisitadosNuevo, Metas, MM). % continua la busqueda con la nueva frontera
 
 generarVecinos([Id, Costo], NuevosVecinos):-
@@ -137,7 +133,7 @@ generarVecinos([Id, Costo], NuevosVecinos):-
 
 agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,Nodo,Metas, VisitadosNuevo):-
 	filtrarVecinos(Vecinos, Visitados, VecinosNoVisitados, VisitadosNuevo),
-	agregarFrontera(VecinosNoVisitados, Frontera, Nodo, NuevaFrontera),
+	insertarVecinos(VecinosNoVisitados, Frontera, Nodo, NuevaFrontera),
 	ordenarPorH(NuevaFrontera, Metas, NuevaFronterOrdenada).
 
 filtrarVecinos([Vecino|RestoVecinos], Visitados, VecinosNuevo, VisitadosNuevo):-
@@ -182,7 +178,7 @@ insertarUnVecino(Vecino, [Nodo|Frontera], Padre, [Nodo|FronteraNueva]):-
     insertarUnVecino(Vecino, Frontera, Padre, FronteraNueva).
 
 ordenarPorH(Frontera, Metas, FronteraOrdenada):- quicksort(Frontera, Metas, FronteraOrdenada).
-    
+
 quicksort([X|Xs], Metas, Ys) :-
   partition(Xs,X,Left,Right, Metas),
   quicksort(Left,Metas, Ls),
@@ -198,54 +194,6 @@ partition([X|Xs],Y,[X|Ls],Rs, Metas) :-
 partition([X|Xs],Y,Ls,[X|Rs], Metas) :-
     partition(Xs,Y,Ls,Rs, Metas).
 partition([],_Y,[],[], _Metas).
-
-filtrarVisistados([Vecino|Vecinos], Visitados, VecinosFiltrados):- %TODO agregar costos
-    pertenece(Vecino, Visitados), !, filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).
-filtrarVisistados([Vecino|Vecinos], Visitados, [Vecino|VecinosFiltrados]):-
-    filtrarVisistados(Vecinos, Visitados, VecinosFiltrados).
-filtrarVisistados([], _Visitados, []).
-
-% pertenece(_, []):- false.
-pertenece(Vecino, [Visitado|_Visitados]):- Vecino = [Id, _], Visitado = [Id, _], !.
-pertenece(Vecino, [_Visitado|Visitados]):- pertenece(Vecino, Visitados).
-
-agregarFrontera([], Frontera, _Nodo, Frontera).
-agregarFrontera([Vecino|Vecinos], Frontera, Nodo, NuevaFrontera):-
-	agregarVecinoMenorCosto(Vecino, Frontera, Nodo, FronteraIntermedia),
-	agregarFrontera(Vecinos, FronteraIntermedia, Nodo,NuevaFrontera).
-
-agregarVecinoMenorCosto(Vecino, [], Padre, [Vecino]):-
-	Vecino = [Id, _CostoV],
-	Padre = [IdPadre, _CostoPadre],
-	agregarPadre(Id, IdPadre).
-agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Vecino|Frontera]):-
-	Vecino = [Id, CostoV],
-	Nodo = [Id, CostoN],
-	Padre = [IdPadre, _CostoPadre],
-	CostoV =< CostoN,!,
-	retractall(padre(Id,_)),
-	agregarPadre(Id, IdPadre).
-agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], _Padre, [Nodo|Frontera]):-
-	Vecino = [Id, CostoV],
-	Nodo = [Id, CostoN],
-	CostoV > CostoN,!.
-agregarVecinoMenorCosto(Vecino, [Nodo|Frontera], Padre, [Nodo|NuevaFrontera]):- 
-	agregarVecinoMenorCosto(Vecino, Frontera, Padre, NuevaFrontera).
-
-%agregarPadre(Hijo, Padre):- retractall(padre(Padre, Hijo)), assert(padre(Hijo, Padre)).
-agregarPadre(Hijo, Padre):- assert(padre(Hijo, Padre)).
-
-bubbleSort( List, Metas, SortedList):-
-    swap( List, Metas, List1 ), ! ,
-    bubbleSort( List1, Metas, SortedList).
-bubbleSort(List, _Metas, List).
-
-swap( [ NodoX, NodoY | Rest ], Metas, [ NodoY, NodoX | Rest ] ) :-
-    calcularF(NodoX,Metas,ResultadoX),
-    calcularF(NodoY,Metas,ResultadoY),
-    ResultadoX > ResultadoY, ! .
-swap( [ Nodo | Rest ], Metas, [ Nodo | Rest1 ] ) :-
-    swap(Rest, Metas, Rest1 ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
