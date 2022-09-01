@@ -18,7 +18,7 @@
 	append3/4
 ]).
 
-:- dynamic plandesplazamiento/1, noop/0.
+:- dynamic plandesplazamiento/1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run(+Perc, -Action, -Text)
@@ -77,50 +77,40 @@ print_beliefs:- writeln('\n\n---------------------------------------------------
 % Esta implementación busca ser un marco para facilitar la resolución del proyecto.
 
 % Si estoy en la misma posición que una copa, intento levantarla.
-decide_action(Action, 'Espero un ciclo...'):-
-	noop, !,
-	retractall(noop),
-	at(MyNode, agente, me),
-	Action = avanzar(MyNode).
-
 decide_action(Action, 'Quiero levantar una copa...'):-
     at(MyNode, agente, me),
     at(MyNode, copa, IdGold),
-    node(MyNode, PosX, PosY, _, _),
+    node(MyNode, PosX, PosY, _, _), !,
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
-	assert(noop),
 	writeln(accion('LEVANTAR COPA')).
 
 decide_action(Action, 'Quiero levantar un cofre...'):-
     at(MyNode, agente, me),
     at(MyNode, cofre, IdGold),
-    node(MyNode, PosX, PosY, _, _),
+    node(MyNode, PosX, PosY, _, _), !,
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
-	assert(noop),
 	writeln(accion('LEVANTAR COFRE')).
 
 decide_action(Action, 'Quiero levantar un reloj...'):-
     at(MyNode, agente, me),
     at(MyNode, reloj, IdGold),
-    node(MyNode, PosX, PosY, _, _),
+    node(MyNode, PosX, PosY, _, _), !,
     Action = levantar_reloj(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
-	assert(noop),
 	writeln(accion('LEVANTAR RELOJ')).
 
 decide_action(Action, 'Quiero levantar una pocion...'):-
     at(MyNode, agente, me),
     at(MyNode, pocion, IdGold),
-    node(MyNode, PosX, PosY, _, _),
+    node(MyNode, PosX, PosY, _, _), !,
     Action = levantar_pocion(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
-	assert(noop),
 	writeln(accion('LEVANTAR POCION')).
 
 % Me muevo a una posición vecina seleccionada de manera aleatoria.
@@ -146,7 +136,7 @@ decide_action(Action, 'Avanzar...'):-
 
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
-        busqueda_plan(Plan, _Destino, _Costo),
+    busqueda_plan(Plan, _Destino, _Costo),
 	Plan \= [],!,
 	obtenerMovimiento(Plan, Action, Resto),
 	assert(plandesplazamiento(Resto)),

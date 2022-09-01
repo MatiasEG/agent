@@ -50,7 +50,7 @@ encontrarCamino(Nodo, [P|Camino]):-
 % donde IdNodo es un identificador de un nodo.
 % Camino es una lista conteniendo identificadores de nodos.
 %
-crearPlan([], []).
+crearPlan([], []):- !.
 crearPlan(Camino, Plan):-
 	findall(avanzar(Nodo), member(Nodo, Camino), Plan).
 
@@ -85,12 +85,8 @@ buscar_plan_desplazamiento(_, [], [], 0).
 %
 
 buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
-	findall(padre(P1, P2), padre(P1, P2), ListaPadres),
-	write(ListaPadres), nl,
 	buscar(Frontera, [], Metas, Destino),
-	findall([X, Y], (padre(X, Y), padre(Y, X)), Bug),writeln(buggggg(Bug)),
 	encontrarCamino(Destino, C),
-	writeln('ENCONTRO CAMINOOOO'),
 	append([Destino], C, C2),
 	reverse(C2, C3),
 	costoCamino(C3, Costo),
@@ -115,10 +111,9 @@ buscarEstrella(Frontera, Metas, Camino, Costo, Destino):-
 
 buscar(Frontera, _, M, Nodo):-
 	seleccionar([Nodo, _], Frontera, _),
-	esMeta(Nodo),
-	writeln(meta(Nodo)),
+	esMeta(Nodo), !,
 	writeln(metas(M)),
-	!.
+	writeln(metaEncontrada(Nodo)).
 
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
@@ -173,7 +168,7 @@ insertarUnVecino(Vecino, [Nodo|RestoFrontera], Padre, [Vecino|RestoFrontera]):-
     CostoVecino < CostoNodo, !, retractall(padre(Id,_)), assert(padre(Id, IdPadre)).
 insertarUnVecino(Vecino, [Nodo|RestoFrontera], _Padre, [Nodo|RestoFrontera]):-
     Vecino = [Id, _CostoVecino],
-    Nodo = [Id, _CostoNodo].
+    Nodo = [Id, _CostoNodo], !.
 insertarUnVecino(Vecino, [Nodo|Frontera], Padre, [Nodo|FronteraNueva]):-
     insertarUnVecino(Vecino, Frontera, Padre, FronteraNueva).
 
