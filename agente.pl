@@ -18,7 +18,7 @@
 	append3/4
 ]).
 
-:- dynamic plandesplazamiento/1.
+:- dynamic plandesplazamiento/1, giro/0, avanzo_random/1 .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run(+Perc, -Action, -Text)
@@ -113,15 +113,6 @@ decide_action(Action, 'Quiero levantar una pocion...'):-
 	retractall(plandesplazamiento(_)),
 	writeln(accion('LEVANTAR POCION')).
 
-% Me muevo a una posición vecina seleccionada de manera aleatoria.
-%decide_action(Action, 'Me muevo a la posicion de al lado...'):-
-%	at(MyNode, agente, me),
-%	node(MyNode, _, _, _, AdyList),
-%	length(AdyList, LenAdyList), LenAdyList > 0,
-%	random_member([IdAdyNode, _CostAdyNode], AdyList),
-%	!,
-%	Action = avanzar(IdAdyNode).
-
 % Si tengo un plan de movimientos, ejecuto la siguiente acción.
 decide_action(Action, 'Avanzar...'):-
 	plandesplazamiento(Plan),
@@ -136,25 +127,65 @@ decide_action(Action, 'Avanzar...'):-
 
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
-    busqueda_plan(Plan, _Destino, _Costo),
+        busqueda_plan(Plan, Destino, _Costo),
 	Plan \= [],!,
-	obtenerMovimiento(Plan, Action, Resto),
-	assert(plandesplazamiento(Resto)),
+	assert(plandesplazamiento(Plan)),
+        mirarAdestino(Destino,Action),
 	writeln(accion('AVANZAR CON PLAN', Action, Plan)).
+
+mirarAdestino(Destino,Action):-
+    node(Destino,DestX,DestY, _, _),
+    at(MyNode, agente, me),
+    node(MyNode, MeX, MeY, _, _),
+    obtenerDireccion(DestX, DestY, MeX, MeY, Action).
+
+obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
+    writeln(asd(DestX,DestY,MeX,MeY)),
+    abs(DestX - MeX) < abs(DestY - MeY),
+    MeY < DestY, !,
+    Action = girar(d).
+
+obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
+    abs(DestX - MeX) < abs(DestY - MeY),
+    MeY >= DestY, !,
+    Action = girar(a).
+
+obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
+    abs(DestX - MeX) >= abs(DestY - MeY),
+    MeX < DestX, !,
+    Action = girar(s).
+
+obtenerDireccion(_DestX, _DestY, _MeX, _MeY, Action):-
+    Action = girar(w).
+
+
+% Me muevo a una posición vecina seleccionada de manera aleatoria.
+decide_action(Action, 'Me muevo a la posicion de al lado...'):-
+	avanzo_random(Cant), Cant < 3, NewCant is Cant + 1,
+        retractall(avanzo_random(_)),
+        assert(avanzo_random(NewCant)),
+        at(MyNode, agente, me),
+	node(MyNode, _, _, _, AdyList),
+	length(AdyList, LenAdyList), LenAdyList > 0,
+	random_member([IdAdyNode, _CostAdyNode], AdyList),
+	!,
+	Action = avanzar(IdAdyNode).
 
 % Giro en sentido horario, para conocer mas terreno.
 decide_action(Action, 'Girar para conocer el territorio...'):-
 	(
 		direction(w)
-		-> Action = girar(d)
+		-> Action = girar(s)
 		; ( direction(d)
-			-> Action = girar(s)
+			-> Action = girar(a)
 			; ( direction(s)
-				-> Action = girar(a)
-				; Action = girar(w)
+				-> Action = girar(w)
+				; Action = girar(d)
 				)
 			)
 	),
+        retractall(avanzo_random(_)),
+        assert(avanzo_random(0)),
 	writeln(accion('GIRAR')).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
