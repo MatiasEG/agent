@@ -223,7 +223,8 @@ costoCamino([X|Xs], R):-
 calcularH(Nodo, Meta, Resultado):-
 	node(Meta, X2, Y2, _, _),
 	node(Nodo, X1, Y1, _, _),
-	distance([X1, Y1], [X2, Y2], Resultado).
+	Resultado is max(abs(X1-X2), abs(Y1-Y2)).
+	%distance([X1, Y1], [X2, Y2], Resultado).
 
 calcularF(Nodo, Metas, Resultado):-
 	Nodo = [Id, Costo],
