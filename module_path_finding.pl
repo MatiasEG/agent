@@ -117,26 +117,37 @@ buscar(Frontera, _, M, Nodo):-
 
 buscar(Frontera, Visitados, Metas, MM):-
 	seleccionar(Nodo, Frontera, FronteraSinNodo), % selecciona primer nodo de la frontera
-	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo - TO-DO
+	generarVecinos(Nodo, Vecinos), % genera los vecinos del nodo
 	agregarAVisitados(Nodo, Visitados, VisitadosIntermedio), % agrega el nodo a lista de visitados
 	agregar(FronteraSinNodo, Vecinos, NuevaFrontera, VisitadosIntermedio, Nodo, Metas,VisitadosNuevo), % agrega vecinos a la frontera - TO-DO
 	buscar(NuevaFrontera, VisitadosNuevo, Metas, MM). % continua la busqueda con la nueva frontera
 
+% generarVecinos(+Nodo, -Vecinos)
+% Genera una lista de pares [IdVecino, CostoVecino] con el Id de los nodos vecinos y el costo total de llegar hasta ellos
 generarVecinos([Id, Costo], NuevosVecinos):-
 	node(Id,_,_,_,Conexiones),
 	findall([IdV, CostoTotal], (member([IdV, CostoV],Conexiones),node(IdV,_,_,CostoV,_), CostoTotal is Costo + CostoV), NuevosVecinos).
 
+% agregar(+Frontera, +Vecinos, -NuevaFronteraOrdenada, +Visitados, +Nodo, +Metas, -VisitadosNuevo)
+% Agrega a la frontera los nuevos vecinos, considerando si ya fueron visitados (ya sea por un mejor o peor camino)
 agregar(Frontera,Vecinos,NuevaFronterOrdenada,Visitados,Nodo,Metas, VisitadosNuevo):-
 	filtrarVecinos(Vecinos, Visitados, VecinosNoVisitados, VisitadosNuevo),
 	insertarVecinos(VecinosNoVisitados, Frontera, Nodo, NuevaFrontera),
-	ordenarPorH(NuevaFrontera, Metas, NuevaFronterOrdenada).
+	ordenarPorF(NuevaFrontera, Metas, NuevaFronterOrdenada).
 
+% filtrarVecinos(+Vecinos, +Visitados, -VecinosNuevo, -VisitadosNuevo)
+% Filtra los vecinos que ya hayan sido visitados por un mejor camino, quita de visitados a los vecinos que hayan sido visitados por un peor camino
 filtrarVecinos([Vecino|RestoVecinos], Visitados, VecinosNuevo, VisitadosNuevo):-
     filtrarUnVecino(Vecino, Visitados, VecinoFiltrado, VisitadosIntermedio),
     filtrarVecinos(RestoVecinos, VisitadosIntermedio, RestoVecinosFiltrados, VisitadosNuevo),
     append(VecinoFiltrado, RestoVecinosFiltrados, VecinosNuevo).
 filtrarVecinos([], Visitados, [], Visitados).
 
+% filtrarUnVecino(+Vecino, +Visitados, -VecinoFiltrado, -VisitadosNuevo)
+% Compara un vecino con la lista de visitados
+% Si el vecino fue visitado por un mejor camino VecinoFiltrado = []
+% Si el vecino fue visitado por un peor camino VecinoFiltrado = [Vecino] y es eliminado de la lista de visitados
+% Sino VecinoFiltrado = [Vecino] y la lista de visitados no es alterada
 filtrarUnVecino(Vecino, [Visitado|RestoVisitados], VecinoFiltrado, VisitadosNuevo):-
     Vecino = [Id, _],
     Visitado = [Id, _], !,
@@ -146,17 +157,26 @@ filtrarUnVecino(Vecino, [Visitado|RestoVisitados], VecinoFiltrado, [Visitado|Res
     filtrarUnVecino(Vecino, RestoVisitados, VecinoFiltrado, RestoVisitadosNuevo).
 filtrarUnVecino(Vecino, [], [Vecino], []).
 
+% compararYFiltrar(+Vecino, +Visitado, -VecinoFiltrado, -VisitadoFiltrado)
+% Compara un vecino que ya fue visitado
+% Si fue visitado por un peor camino VecinoFiltrado = [Vecino] y VisitadoFiltrado = []
+% Si fue visitado por un mejor camino VecinoFiltrado = [] y VisitadoFiltrado = [Visitado]
 compararYFiltrar(Vecino, Visitado, [Vecino], []):-
     Vecino = [Id, CostoVecino],
     Visitado = [Id, CostoVisitado],
     CostoVecino < CostoVisitado, !, retractall(padre(Id,_)).
 compararYFiltrar(_, Visitado, [], [Visitado]).
 
+% insertarVecinos(+Vecinos, +Frontera, +Padre, -FronteraResultado)
+% Agrega la lista de vecinos a la frontera, considerando los casos en que el vecino ya este en la frontera (ya sea por un mejor o peor camino)
 insertarVecinos([Vecino|RestoVecinos], Frontera, Padre, FronteraResultado):-
     insertarUnVecino(Vecino, Frontera, Padre, FronteraIntermedia),
     insertarVecinos(RestoVecinos, FronteraIntermedia, Padre, FronteraResultado).
 insertarVecinos([], Frontera, _Padre, Frontera).
 
+% insertarUnVecino(+Vecino, +Frontera, +Padre, -FronteraNueva)
+% Agrega un vecino a la frontera si no fue visitado por un mejor camino
+% Si fue visitado por un peor camino elimina la instancia previa de la frontera
 insertarUnVecino(Vecino, [], Padre, [Vecino]):-
     Vecino = [Id, _CostoVecino],
     Padre = [IdPadre, _CostoPadre],
@@ -172,7 +192,9 @@ insertarUnVecino(Vecino, [Nodo|RestoFrontera], _Padre, [Nodo|RestoFrontera]):-
 insertarUnVecino(Vecino, [Nodo|Frontera], Padre, [Nodo|FronteraNueva]):-
     insertarUnVecino(Vecino, Frontera, Padre, FronteraNueva).
 
-ordenarPorH(Frontera, Metas, FronteraOrdenada):- quicksort(Frontera, Metas, FronteraOrdenada).
+% ordenarPorF(+Fontera, +Metas, -FronteraOrdenada)
+% Ordena la frontera en funcion del valor de f(N) para cada nodo
+ordenarPorF(Frontera, Metas, FronteraOrdenada):- quicksort(Frontera, Metas, FronteraOrdenada).
 
 quicksort([X|Xs], Metas, Ys) :-
   partition(Xs,X,Left,Right, Metas),
@@ -215,17 +237,17 @@ costoCamino([X|Xs], R):-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% calcularH(+Nodo, ?Resultado, +Meta)
+% calcularH(+Nodo, +Meta, ?Resultado)
 %
 % Calcula el valor de la heurística para el nodo Nodo a una Meta.
-% La heurística es la distancia euclidea.
-%
+% La heurística es la máxima diferencia sobre uno de los dos ejes
 calcularH(Nodo, Meta, Resultado):-
 	node(Meta, X2, Y2, _, _),
 	node(Nodo, X1, Y1, _, _),
 	Resultado is max(abs(X1-X2), abs(Y1-Y2)).
-	%distance([X1, Y1], [X2, Y2], Resultado).
 
+% calcularF(+Nodo, +Metas, -Resultado)
+% Calcula el valor de la función f(N) = g(N) + h(N)
 calcularF(Nodo, Metas, Resultado):-
 	Nodo = [Id, Costo],
 	findall(Distancia, (member(Meta, Metas), calcularH(Id,Meta,Distancia)), Distancias),

@@ -80,34 +80,41 @@ print_beliefs:- writeln('\n\n---------------------------------------------------
 decide_action(Action, 'Quiero levantar una copa...'):-
     at(MyNode, agente, me),
     at(MyNode, copa, IdGold),
-    node(MyNode, PosX, PosY, _, _), !,
+    node(MyNode, PosX, PosY, _, _),
+    !,
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
 	writeln(accion('LEVANTAR COPA')).
 
+% Si estoy en la misma posición que un cofre, intento levantarlo.
 decide_action(Action, 'Quiero levantar un cofre...'):-
     at(MyNode, agente, me),
     at(MyNode, cofre, IdGold),
-    node(MyNode, PosX, PosY, _, _), !,
+    node(MyNode, PosX, PosY, _, _),
+    !,
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
 	writeln(accion('LEVANTAR COFRE')).
 
+% Si estoy en la misma posición que un reloj, intento levantarlo.
 decide_action(Action, 'Quiero levantar un reloj...'):-
     at(MyNode, agente, me),
     at(MyNode, reloj, IdGold),
-    node(MyNode, PosX, PosY, _, _), !,
+    node(MyNode, PosX, PosY, _, _),
+    !,
     Action = levantar_reloj(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
 	writeln(accion('LEVANTAR RELOJ')).
 
+% Si estoy en la misma posición que una pocion, intento levantarla.
 decide_action(Action, 'Quiero levantar una pocion...'):-
     at(MyNode, agente, me),
     at(MyNode, pocion, IdGold),
-    node(MyNode, PosX, PosY, _, _), !,
+    node(MyNode, PosX, PosY, _, _),
+    !,
     Action = levantar_pocion(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
 	retractall(plandesplazamiento(_)),
@@ -127,25 +134,29 @@ decide_action(Action, 'Avanzar...'):-
 
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
-        busqueda_plan(Plan, Destino, _Costo),
-	Plan \= [],!,
+    busqueda_plan(Plan, Destino, _Costo),
+	Plan \= [],
+	!,
 	assert(plandesplazamiento(Plan)),
-        mirarAdestino(Destino,Action),
+    mirarAdestino(Destino,Action),
 	writeln(accion('AVANZAR CON PLAN', Action, Plan)).
 
-% Me muevo a una posición vecina seleccionada de manera aleatoria.
+% Me muevo a una posición vecina seleccionada de manera aleatoria, repetir hasta 3 veces antes de girar.
 decide_action(Action, 'Me muevo a la posicion de al lado...'):-
-	avanzo_random(Cant), Cant < 3, NewCant is Cant + 1,
-        retractall(avanzo_random(_)),
-        assert(avanzo_random(NewCant)),
-        at(MyNode, agente, me),
+	avanzo_random(Cant),
+	Cant < 3,
+	NewCant is Cant + 1,
+    retractall(avanzo_random(_)),
+    assert(avanzo_random(NewCant)),
+    at(MyNode, agente, me),
 	node(MyNode, _, _, _, AdyList),
-	length(AdyList, LenAdyList), LenAdyList > 0,
+	length(AdyList, LenAdyList),
+	LenAdyList > 0,
 	random_member([IdAdyNode, _CostAdyNode], AdyList),
 	!,
 	Action = avanzar(IdAdyNode).
 
-% Giro en sentido horario, para conocer mas terreno.
+% Giro 180°, para conocer mas terreno.
 decide_action(Action, 'Girar para conocer el territorio...'):-
 	(
 		direction(w)
@@ -158,11 +169,11 @@ decide_action(Action, 'Girar para conocer el territorio...'):-
 				)
 			)
 	),
-        retractall(avanzo_random(_)),
-        assert(avanzo_random(0)),
+    retractall(avanzo_random(_)),
+    assert(avanzo_random(0)),
 	writeln(accion('GIRAR')).
 
-
+% Obtiene la acción de girar necesaria para que el agente mire hacia el nodo destino
 mirarAdestino(Destino,Action):-
     node(Destino,DestX,DestY, _, _),
     at(MyNode, agente, me),
@@ -170,7 +181,6 @@ mirarAdestino(Destino,Action):-
     obtenerDireccion(DestX, DestY, MeX, MeY, Action).
 
 obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
-    writeln(asd(DestX,DestY,MeX,MeY)),
     abs(DestX - MeX) < abs(DestY - MeY),
     MeY < DestY, !,
     Action = girar(d).
