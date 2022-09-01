@@ -133,32 +133,6 @@ decide_action(Action, 'Avanzar con nuevo plan...'):-
         mirarAdestino(Destino,Action),
 	writeln(accion('AVANZAR CON PLAN', Action, Plan)).
 
-mirarAdestino(Destino,Action):-
-    node(Destino,DestX,DestY, _, _),
-    at(MyNode, agente, me),
-    node(MyNode, MeX, MeY, _, _),
-    obtenerDireccion(DestX, DestY, MeX, MeY, Action).
-
-obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
-    writeln(asd(DestX,DestY,MeX,MeY)),
-    abs(DestX - MeX) < abs(DestY - MeY),
-    MeY < DestY, !,
-    Action = girar(d).
-
-obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
-    abs(DestX - MeX) < abs(DestY - MeY),
-    MeY >= DestY, !,
-    Action = girar(a).
-
-obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
-    abs(DestX - MeX) >= abs(DestY - MeY),
-    MeX < DestX, !,
-    Action = girar(s).
-
-obtenerDireccion(_DestX, _DestY, _MeX, _MeY, Action):-
-    Action = girar(w).
-
-
 % Me muevo a una posición vecina seleccionada de manera aleatoria.
 decide_action(Action, 'Me muevo a la posicion de al lado...'):-
 	avanzo_random(Cant), Cant < 3, NewCant is Cant + 1,
@@ -187,6 +161,33 @@ decide_action(Action, 'Girar para conocer el territorio...'):-
         retractall(avanzo_random(_)),
         assert(avanzo_random(0)),
 	writeln(accion('GIRAR')).
+
+
+mirarAdestino(Destino,Action):-
+    node(Destino,DestX,DestY, _, _),
+    at(MyNode, agente, me),
+    node(MyNode, MeX, MeY, _, _),
+    obtenerDireccion(DestX, DestY, MeX, MeY, Action).
+
+obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
+    writeln(asd(DestX,DestY,MeX,MeY)),
+    abs(DestX - MeX) < abs(DestY - MeY),
+    MeY < DestY, !,
+    Action = girar(d).
+
+obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
+    abs(DestX - MeX) < abs(DestY - MeY),
+    MeY >= DestY, !,
+    Action = girar(a).
+
+obtenerDireccion(DestX, DestY, MeX, MeY, Action):-
+    abs(DestX - MeX) >= abs(DestY - MeY),
+    MeX < DestX, !,
+    Action = girar(s).
+
+obtenerDireccion(_DestX, _DestY, _MeX, _MeY, Action):-
+    Action = girar(w).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
