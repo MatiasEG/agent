@@ -8,7 +8,7 @@
 
 :- use_module(module_beliefs_update, [node/5, at/3]).
 
-:- dynamic padre/2, raiz/1, esMeta/1.
+:- dynamic padre/2, raiz/1, esMeta/1, h/2.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -71,6 +71,7 @@ buscar_plan_desplazamiento(Metas, Plan, Destino, Costo):-
 	!,
 	retractall(raiz(_)),
 	retractall(padre(_,_)),
+	retractall(h(_,_)),
 	assert(raiz(MyNode)),
 	buscarEstrella([[MyNode, 0]], Metas, Camino, Costo, Destino),
 	crearPlan(Camino, Plan).
@@ -248,16 +249,16 @@ calcularH(Nodo, Meta, Resultado):-
 
 % calcularF(+Nodo, +Metas, -Resultado)
 % Calcula el valor de la función f(N) = g(N) + h(N)
+calcularF(Nodo, _Metas, Resultado):-
+	Nodo = [Id, Costo],
+	h(Id, ResultadoH),
+	Resultado is ResultadoH + Costo.
 calcularF(Nodo, Metas, Resultado):-
 	Nodo = [Id, Costo],
 	findall(Distancia, (member(Meta, Metas), calcularH(Id,Meta,Distancia)), Distancias),
 	minDistancia(Distancias, ResultadoH),
+	assert(h(Id, ResultadoH)),
 	Resultado is ResultadoH + Costo.
 
 minDistancia([X], X):- !.
 minDistancia([X|Xs], Min):- minDistancia(Xs, MinXs), Min is min(X, MinXs).
-
-distance([X1, Y1], [X2, Y2], Distance):-
-	DX is X2 - X1,
-	DY is Y2 - Y1,
-	Distance is sqrt(DX^2 + DY^2).
