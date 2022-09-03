@@ -251,7 +251,7 @@ calcularH(Nodo, Meta, Resultado):-
 % Calcula el valor de la función f(N) = g(N) + h(N)
 calcularF(Nodo, _Metas, Resultado):-
 	Nodo = [Id, Costo],
-	h(Id, ResultadoH),
+	h(Id, ResultadoH), !,
 	Resultado is ResultadoH + Costo.
 calcularF(Nodo, Metas, Resultado):-
 	Nodo = [Id, Costo],
