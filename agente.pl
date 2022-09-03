@@ -18,7 +18,7 @@
 	append3/4
 ]).
 
-:- dynamic plandesplazamiento/1, giro/0, avanzo_random/1 .
+:- dynamic plandesplazamiento/1, giro/0, avanzo_random/1, dest/1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run(+Perc, -Action, -Text)
@@ -125,6 +125,7 @@ decide_action(Action, 'Avanzar...'):-
 	plandesplazamiento(Plan),
 	length(Plan, LargoPlan),
 	LargoPlan > 0,
+        checkDestino(),
 	!,
 	obtenerMovimiento(Plan, Destino, Resto),
 	retractall(plandesplazamiento(_)),
@@ -134,8 +135,10 @@ decide_action(Action, 'Avanzar...'):-
 
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
+    retractall(dest(_)),
     busqueda_plan(Plan, Destino, _Costo),
 	Plan \= [],
+        assert(dest(Destino)),
 	!,
 	assert(plandesplazamiento(Plan)),
     mirarAdestino(Destino,Action),
@@ -172,6 +175,17 @@ decide_action(Action, 'Girar para conocer el territorio...'):-
     retractall(avanzo_random(_)),
     assert(avanzo_random(0)),
 	writeln(accion('GIRAR')).
+
+checkDestino():-
+    dest(Id),
+    at(Id,_,_).
+checkDestino():-
+    dest(Id),
+    \+at(Id,_,_),
+    retractall(plandesplazamiento(_)),
+    false.
+
+
 
 % Obtiene la acción de girar necesaria para que el agente mire hacia el nodo destino
 mirarAdestino(Destino,Action):-
