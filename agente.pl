@@ -157,7 +157,8 @@ decide_action(Action, 'Me muevo a la posicion de al lado...'):-
 	LenAdyList > 0,
 	random_member([IdAdyNode, _CostAdyNode], AdyList),
 	!,
-	Action = avanzar(IdAdyNode).
+	Action = avanzar(IdAdyNode),
+	writeln(accion('AVANZAR ALEATORIO', Action)).
 
 % Giro 180°, para conocer mas terreno.
 decide_action(Action, 'Girar para conocer el territorio...'):-
