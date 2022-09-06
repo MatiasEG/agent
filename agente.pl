@@ -120,7 +120,7 @@ decide_action(Action, 'Quiero levantar una pocion...'):-
 	retractall(plandesplazamiento(_)),
 	writeln(accion('LEVANTAR POCION')).
 
-% Si tengo un plan de movimientos, ejecuto la siguiente acción.
+% Si tengo un plan de movimientos, ejecuto la siguiente acción del plan.
 decide_action(Action, 'Avanzar...'):-
 	plandesplazamiento(Plan),
 	length(Plan, LargoPlan),
