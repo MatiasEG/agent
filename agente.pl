@@ -49,11 +49,12 @@
 
 run(Perc, Action, Text):-
     update_beliefs(Perc), % implementado en module_beliefs_update
-    print_beliefs,
+    %print_beliefs,
     decide_action(Action, Text).
 
-print_beliefs:- writeln('\n\n---------------------------------------------------------------------------'),
-				forall(at(IdNode, TipoEntidad, IdEntidad), (node(IdNode, X, Y, _, _), writeln(at(IdNode, TipoEntidad, IdEntidad, X, Y)))).
+%print_beliefs:-
+%	writeln('\n\n---------------------------------------------------------------------------'),
+%	forall(at(IdNode, TipoEntidad, IdEntidad), (node(IdNode, X, Y, _, _), writeln(at(IdNode, TipoEntidad, IdEntidad, X, Y)))).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TO-DO
@@ -84,8 +85,8 @@ decide_action(Action, 'Quiero levantar una copa...'):-
     !,
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)),
-	writeln(accion('LEVANTAR COPA')).
+	retractall(plandesplazamiento(_)).
+%	writeln(accion('LEVANTAR COPA'))
 
 % Si estoy en la misma posición que un cofre, intento levantarlo.
 decide_action(Action, 'Quiero levantar un cofre...'):-
@@ -95,8 +96,8 @@ decide_action(Action, 'Quiero levantar un cofre...'):-
     !,
     Action = levantar_tesoro(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)),
-	writeln(accion('LEVANTAR COFRE')).
+	retractall(plandesplazamiento(_)).
+%	writeln(accion('LEVANTAR COFRE'))
 
 % Si estoy en la misma posición que un reloj, intento levantarlo.
 decide_action(Action, 'Quiero levantar un reloj...'):-
@@ -106,8 +107,8 @@ decide_action(Action, 'Quiero levantar un reloj...'):-
     !,
     Action = levantar_reloj(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)),
-	writeln(accion('LEVANTAR RELOJ')).
+	retractall(plandesplazamiento(_)).
+%	writeln(accion('LEVANTAR RELOJ'))
 
 % Si estoy en la misma posición que una pocion, intento levantarla.
 decide_action(Action, 'Quiero levantar una pocion...'):-
@@ -117,8 +118,8 @@ decide_action(Action, 'Quiero levantar una pocion...'):-
     !,
     Action = levantar_pocion(IdGold, PosX, PosY),
     retractall(at(MyNode, _, IdGold)),
-	retractall(plandesplazamiento(_)),
-	writeln(accion('LEVANTAR POCION')).
+	retractall(plandesplazamiento(_)).
+%	writeln(accion('LEVANTAR POCION'))
 
 % Si tengo un plan de movimientos, ejecuto la siguiente acción del plan.
 decide_action(Action, 'Avanzar...'):-
@@ -130,8 +131,8 @@ decide_action(Action, 'Avanzar...'):-
 	obtenerMovimiento(Plan, Destino, Resto),
 	retractall(plandesplazamiento(_)),
 	assert(plandesplazamiento(Resto)),
-	Action = Destino,
-	writeln(accion('AVANZAR', Destino)).
+	Action = Destino.
+%	writeln(accion('AVANZAR', Destino))
 
 % Si no tengo un plan guardado, busco uno nuevo.
 decide_action(Action, 'Avanzar con nuevo plan...'):-
@@ -141,8 +142,8 @@ decide_action(Action, 'Avanzar con nuevo plan...'):-
         assert(dest(Destino)),
 	!,
 	assert(plandesplazamiento(Plan)),
-    mirarAdestino(Destino,Action),
-	writeln(accion('AVANZAR CON PLAN', Action, Plan)).
+    mirarAdestino(Destino,Action).
+%	writeln(accion('AVANZAR CON PLAN', Action, Plan))
 
 % Me muevo a una posición vecina seleccionada de manera aleatoria, repetir hasta 3 veces antes de girar.
 decide_action(Action, 'Me muevo a la posicion de al lado...'):-
@@ -157,8 +158,8 @@ decide_action(Action, 'Me muevo a la posicion de al lado...'):-
 	LenAdyList > 0,
 	random_member([IdAdyNode, _CostAdyNode], AdyList),
 	!,
-	Action = avanzar(IdAdyNode),
-	writeln(accion('AVANZAR ALEATORIO', Action)).
+	Action = avanzar(IdAdyNode).
+%	writeln(accion('AVANZAR ALEATORIO', Action))
 
 % Giro 180°, para conocer mas terreno.
 decide_action(Action, 'Girar para conocer el territorio...'):-
@@ -174,9 +175,12 @@ decide_action(Action, 'Girar para conocer el territorio...'):-
 			)
 	),
     retractall(avanzo_random(_)),
-    assert(avanzo_random(0)),
-	writeln(accion('GIRAR')).
+    assert(avanzo_random(0)).
+%	writeln(accion('GIRAR'))
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Controla si el destino al que esta avanzado con el plan sigue conteniendo un objeto.
 checkDestino():-
     dest(Id),
     at(Id,_,_).
@@ -186,8 +190,8 @@ checkDestino():-
     retractall(plandesplazamiento(_)),
     false.
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Obtiene la acción de girar necesaria para que el agente mire hacia el nodo destino
 mirarAdestino(Destino,Action):-
     node(Destino,DestX,DestY, _, _),

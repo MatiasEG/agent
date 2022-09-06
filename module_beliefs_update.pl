@@ -39,11 +39,15 @@ update_beliefs(Perc):-
 	forall(at(Id, TipoEntidad, IdEntidad), check_entity(at(Id, TipoEntidad, IdEntidad), node(Id,_,_,_,_), Perc)),
 	forall(member(Rel, Perc), add(Rel)).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % controla que las entidades ubicadas en el nodo sigan estando en la nueva percepcion
 check_entity(_At, Node, Perc):- \+member(Node, Perc), !.
 check_entity(At, Node, Perc):- member(Node, Perc), member(At, Perc), !.
 check_entity(at(IdNodo, TipoEntidad, IdEntidad), _Node, _Perc):- retract(at(IdNodo, TipoEntidad, IdEntidad)).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % agrega X si no existe actualmente
 add(X):- X, !.
 add(X):- assert(X).
