@@ -18,7 +18,7 @@
 	append3/4
 ]).
 
-:- dynamic plandesplazamiento/1, giro/0, avanzo_random/1, dest/1.
+:- dynamic plandesplazamiento/1, avanzo_random/1, dest/1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run(+Perc, -Action, -Text)
